@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    
+        <script>
+            L_NO_TOUCH = false;
+            L_DISABLE_3D = false;
+        </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://rawcdn.githack.com/python-visualization/folium/master/folium/templates/leaflet.awesome.rotate.css"/>
+
+<style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+<style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>
+
+    <meta name="viewport" content="width=device-width,
+        initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <style>
+        #navbar {
+            position: relative;
+            width: 100.0%;
+            height: 8.0%;
+            left: 0.0%;
+            top: 0.0%;
+        }
+    </style>
+    <style>
+        #map_32e62bedd9a14cf88368921141d029d0 {
+            position: relative;
+            width: 100.0%;
+            height: 100.0%;
+            left: 0.0%;
+            top: 0.0%;
+        }
+    </style>
+        <style>
+            .leaflet-image-layer {
+                /* old android/safari*/
+                image-rendering: -webkit-optimize-contrast;
+                image-rendering: crisp-edges; /* safari */
+                image-rendering: pixelated; /* chrome */
+                image-rendering: -moz-crisp-edges; /* firefox */
+                image-rendering: -o-crisp-edges; /* opera */
+                -ms-interpolation-mode: nearest-neighbor; /* ie */
+            }
+        </style>            
+</head>
+<body>
+  <div class="navbar">
+    <label for="fname">Recherche de nom:</label>
+    <input type="text" id="fname" name="fname" onchange="update()"><br>
+  <p><span id=span></span></p></div>
+  <div class="folium-map" id="map_32e62bedd9a14cf88368921141d029d0" ></div>
+</body>
+<script>
+
+    var map = L.map(
+        "map_32e62bedd9a14cf88368921141d029d0",
+        {
+            center: [46.522, 6.635],
+            crs: L.CRS.EPSG3857,
+            zoom: 16,
+            zoomControl: true,
+            preferCanvas: false,
+        }
+    );
+    L.control.scale().addTo(map);
+
+    var tile_layer_cb69cd67dcba40688d10fd7bc67250d0 = L.tileLayer(
+        "https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png",
+        {"attribution": "\u0026copy; \u003ca href=\"http://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"http://cartodb.com/attributions\"\u003eCartoDB\u003c/a\u003e, CartoDB \u003ca href =\"http://cartodb.com/attributions\"\u003eattributions\u003c/a\u003e", "detectRetina": false, "maxNativeZoom": 18, "maxZoom": 18, "minZoom": 0, "noWrap": false, "opacity": 1, "subdomains": "abc", "tms": false}
+    ).addTo(map);
+
+    var all_markers = [];
+
+    function initRequest(requestURL) {
+        var request = new XMLHttpRequest();
+        request.open('GET', requestURL);
+        request.responseType = 'json';
+        request.send();
+        return request;
+    }
+
+    function update() {
+        var url = 'https://raw.githubusercontent.com/RPetitpierre/tutorial_web_2/master/population_sample.json';
+        var request = initRequest(url);
+        var inputName = document.getElementById("fname").value;
+
+        request.onload = function() {
+            var jsonObject = request.response;
+            console.log(jsonObject)
+            var subset = $.grep(jsonObject, function (n, i) {
+                var str = n["name"]
+                return ((str.search(inputName)) > -1);
+            });
+
+            for (i=0; i < all_markers.length; i++) {
+                map.removeLayer(all_markers[i]);
+            }
+            all_markers = [];
+
+            for (i=0; i < subset.length; i++) {
+                var marker_popup = L.popup().setContent(subset[i]["name"]);
+                var new_marker = L.marker([subset[i]["lat"], subset[i]["lon"]]).bindPopup(marker_popup);
+                all_markers.push(new_marker);
+                map.addLayer(new_marker);
+            }
+        }
+    }
+
+</script>
